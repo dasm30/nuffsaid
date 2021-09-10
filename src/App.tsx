@@ -1,40 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MessagesList from './components/MessagesList';
-import { useMessages } from './customHooks/useMessages';
-import Button from './components/styled/Button';
-import { Grid, Snackbar } from '@material-ui/core';
-import { CenteredGrid } from './components/styled/Centered';
+import { Snackbar } from '@material-ui/core';
 import { Alert } from './components/Alert';
-import { useCallback } from 'react';
-
-const autoClose = 2000;
+import { snackbarActions, useShallowSelectSnackbar } from './data/slices/snackbarSlice';
+import { useDispatch } from 'react-redux';
+import { MessagesButtons } from './components/MessagesButtons';
 
 const App: React.FC<{}> = () => {
-  const [showError, setShowError] = useState(false);
-  const close = useCallback(() => setShowError(false), []);
-  const { messages, getHandleSync } = useMessages(() => {
-    setShowError(true);
-    setTimeout(close, autoClose);
-  });
+  const {
+    show: showSnack,
+    autoClose,
+    message,
+  } = useShallowSelectSnackbar(['show', 'autoClose', 'message']);
+  const dispatch = useDispatch();
+  const close = () => dispatch(snackbarActions.toggle(false));
 
   return (
     <>
-      <Snackbar open={showError} autoHideDuration={autoClose} onClose={close}>
+      <Snackbar open={showSnack} autoHideDuration={autoClose} onClose={close}>
         <Alert onClose={close} severity='error'>
-          {messages?.[0]?.[0]?.message}
+          {message}
         </Alert>
       </Snackbar>
-      <Grid container spacing={8}>
-        <CenteredGrid item xs={12} margin='0 0 32px 0'>
-          <Button size='small' variant='contained' margin={4} onClick={getHandleSync(false)}>
-            Stop
-          </Button>
-          <Button size='small' variant='contained' margin={4} onClick={getHandleSync(true, true)}>
-            Clear
-          </Button>
-        </CenteredGrid>
-      </Grid>
-      <MessagesList messages={messages} />
+      <MessagesButtons />
+      <MessagesList />
     </>
   );
 };

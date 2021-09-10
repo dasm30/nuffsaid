@@ -1,39 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import generateMessage, { Message, Priority } from '../Api';
+import { messagesActions, useSelectMessages } from '../data/slices/messagesSlice';
+import { snackbarActions } from '../data/slices/snackbarSlice';
 
-export type Messages = {
-  [Priority.Error]: Message[];
-  [Priority.Warn]: Message[];
-  [Priority.Info]: Message[];
-};
-
-export const useMessages = (handleNewError: Function) => {
-  const [messages, setMessages] = useState<Messages>({ 0: [], 1: [], 2: [] });
-  const [sync, setSync] = useState(true);
-  const getHandleSync = (sync: boolean, clear?: boolean) => () => {
-    setSync(sync);
-    if (clear) {
-      setMessages({
-        [Priority.Error]: [],
-        [Priority.Warn]: [],
-        [Priority.Info]: [],
-      });
-    }
-  };
+/**
+ * handles the api call to get new messages
+ */
+export const useMessages = () => {
+  const dispatch = useDispatch();
+  const sync = useSelectMessages('sync');
 
   useEffect(() => {
     const cleanUp = generateMessage((message: Message) => {
       if (sync) {
-        setMessages((oldMessages) => {
-          const newMessages: Message[] = [message, ...oldMessages[message.priority]];
-          if (handleNewError && message.priority === Priority.Error) handleNewError();
-          return { ...oldMessages, [message.priority]: newMessages };
-        });
+        dispatch(messagesActions.add(message));
+        if (message.priority === Priority.Error) dispatch(snackbarActions.toggle(true));
       }
     });
     return cleanUp;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setMessages, sync]);
-
-  return { messages, getHandleSync };
+  }, [dispatch, sync]);
 };
