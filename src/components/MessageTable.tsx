@@ -6,6 +6,7 @@ import { SimpleH2 } from './styled/Headings';
 import { TableRow, TableBody, TableCell, Table, Paper } from '@material-ui/core';
 import { messagesActions, useSelectMessages } from '../data/slices/messagesSlice';
 import { useDispatch } from 'react-redux';
+import { useElementHeight } from '../customHooks/useElementHeight';
 
 const colors = {
   [Priority.Error]: '#F56236',
@@ -15,8 +16,13 @@ const colors = {
 
 const StyledTableRow = styled(TableRow)<{ priority: Priority }>`
   background-color: ${({ priority }) => colors[priority]};
-  border-spacing: 0 8px;
-  border-collapse: separate;
+  display: grid;
+  margin: 8px;
+  border-radius: 4px;
+  box-shadow: 0px 2px 4px 0px #8484847a;
+  th {
+    border-bottom: unset;
+  };
 `;
 
 interface Props {
@@ -34,17 +40,41 @@ const StyledP = styled.p`
   }
 `;
 
+const StyledTableBody = styled(({ allHeights, ...rest }) => <TableBody {...rest} />)`
+  height: calc(100vh - ${(props) => props.allHeights}px);
+  display: block;
+  overflow-y: auto;
+  :after {
+    content: '';
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 1) 90%
+    );
+  }
+`;
+
+export const titleHeightKey = 'title-h2';
+export const countHeightKey = 'count-p';
+
 export const MessageTable: React.FC<Props> = ({ title, priority }) => {
   const messages: Message[] = useSelectMessages(`messages.[${priority}]`);
   const dispatch = useDispatch();
   const getRemoveMsg = (msg: Message) => () => dispatch(messagesActions.remove(msg));
 
+  const { ref: titleRef } = useElementHeight(titleHeightKey);
+  const countVMargin = 12;
+  const { ref: countRef, allHeights } = useElementHeight(countHeightKey, countVMargin);
+  const extraSpace = 36;
+
   return (
     <Paper elevation={0}>
-      <SimpleH2>{title}</SimpleH2>
-      <SimpleP>Count {messages?.length || 0}</SimpleP>
+      <SimpleH2 innerRef={titleRef}>{title}</SimpleH2>
+      <SimpleP innerRef={countRef} margin={`0 0 ${countVMargin}px`}>
+        Count {messages?.length || 0}
+      </SimpleP>
       <Table aria-label='customized table'>
-        <TableBody>
+        <StyledTableBody allHeights={allHeights + extraSpace}>
           {messages?.map((msg) => (
             <StyledTableRow key={msg.message} priority={msg.priority}>
               <TableCell component='th' scope='row'>
@@ -53,7 +83,7 @@ export const MessageTable: React.FC<Props> = ({ title, priority }) => {
               </TableCell>
             </StyledTableRow>
           ))}
-        </TableBody>
+        </StyledTableBody>
       </Table>
     </Paper>
   );
