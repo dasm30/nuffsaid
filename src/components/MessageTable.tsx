@@ -17,7 +17,7 @@ const colors = {
 const StyledTableRow = styled(TableRow)<{ priority: Priority }>`
   background-color: ${({ priority }) => colors[priority]};
   display: grid;
-  margin: 8px;
+  margin: 8px 0;
   border-radius: 4px;
   box-shadow: 0px 2px 4px 0px #8484847a;
   th {
@@ -54,8 +54,10 @@ const StyledTableBody = styled(({ allHeights, ...rest }) => <TableBody {...rest}
   }
 `;
 
-export const titleHeightKey = 'title-h2';
-export const countHeightKey = 'count-p';
+const titleHeightKey = 'title-h2';
+const countHeightKey = 'count-p';
+const countVMargin = 12;
+const extraSpace = 36;
 
 export const MessageTable: React.FC<Props> = ({ title, priority }) => {
   const messages: Message[] = useSelectMessages(`messages.[${priority}]`);
@@ -63,9 +65,7 @@ export const MessageTable: React.FC<Props> = ({ title, priority }) => {
   const getRemoveMsg = (msg: Message) => () => dispatch(messagesActions.remove(msg));
 
   const { ref: titleRef } = useElementHeight(titleHeightKey);
-  const countVMargin = 12;
-  const { ref: countRef, allHeights } = useElementHeight(countHeightKey, countVMargin);
-  const extraSpace = 36;
+  const { ref: countRef, allHeights } = useElementHeight(countHeightKey, countVMargin + extraSpace);
 
   return (
     <Paper elevation={0}>
@@ -74,7 +74,7 @@ export const MessageTable: React.FC<Props> = ({ title, priority }) => {
         Count {messages?.length || 0}
       </SimpleP>
       <Table aria-label='customized table'>
-        <StyledTableBody allHeights={allHeights + extraSpace}>
+        <StyledTableBody allHeights={allHeights}>
           {messages?.map((msg) => (
             <StyledTableRow key={msg.message} priority={msg.priority}>
               <TableCell component='th' scope='row'>
