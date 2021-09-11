@@ -1,3 +1,10 @@
+# IMPORTANT NOTES
+
+1. I wouldn't use React Context API in any production app. I went with redux toolkit which is more powerful, scalable, and maintainable.
+2. I did not implement a virtualized table because it would have taken me longer, I'll do if necessary. Nevertheless, I coded as best as I could to make the app run smoothly even with lots of data.
+3. I went for a scalable solution regarding the elements heights just to showcase it. In a simple app it might actually be better to avoid using refs and just have static values to give the table its height.
+
+
 ## React Coding Challenge
 
 This code challenge tests your skills in react.js (using Typescript), testing and modular design.
